@@ -1,5 +1,5 @@
 /*
-PAGE FOR SIGN-IN
+  PAGE FOR SIGN-IN
 */
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -15,7 +15,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 
-import loginF from '../../utils/loginFake';
+import { signIn } from '../../hooks/setSing';
 
 function Copyright() {
   return (
@@ -53,40 +53,45 @@ const useStyles = makeStyles((theme) => ({
 const SignInPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [errorEmail, setErrorEmail] = useState(null);
+  const [errorPassword, setErrorPassword] = useState(null);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const { push } = useHistory();
   const classes = useStyles();
 
   /* async function onSubmit(e) { */
+  /* const onSubmit = async (e) => { */
   const onSubmit = async (e) => {
     /* Handle the submit buttom */
     e.preventDefault();
-
     setLoading(true);
-    setError(null);
-    try {
-      const res = await loginF({ email, password });
-      // eslint-disable-next-line no-console
-      console.log('respuests SingIn --->', res);
+    setError(false);
+
+    const response = await signIn({ email, password });
+
+    if (response.status === 200) {
+      setLoggedIn(true);
+      setEmail('');
+      setPassword('');
       push({
         pathname: '/',
-        state: res,
+        state: response.data,
       });
-      setLoggedIn(true);
-      /*
-      ESTO SE CAMBIA; CUANDO ESTE EL CONTEXTO Y DETECTE
-      ENTRAR A ESTA PAGINA MADAR EL AVISO QUE YA SE ENCUENTRA LOGEADO
-      */
+    } else {
+      setError(true);
+      setErrorEmail(response.errEmailMsg && response.errEmailMsg);
+      setErrorPassword(response.errPasswordMsg && response.errPasswordMsg);
       setEmail('');
       setPassword('');
-    } catch (err) {
-      setError('Incorrect email or password!');
-      setEmail('');
-      setPassword('');
+      setTimeout(() => {
+        setErrorEmail(null);
+        setErrorPassword(null);
+        setError(false);
+        setLoading(false);
+      }, 2000);
     }
-    setLoading(false);
   };
 
   return (
@@ -106,7 +111,6 @@ const SignInPage = () => {
           Sign in
         </Typography>
         <form className={classes.form} noValidate onSubmit={onSubmit}>
-          {error && <p>{error}</p>}
           <TextField
             autoComplete="email"
             autoFocus
@@ -119,6 +123,8 @@ const SignInPage = () => {
             variant="outlined"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            error={Boolean(error)}
+            helperText={errorEmail && <span>{errorEmail}</span>}
           />
           <TextField
             autoComplete="current-password"
@@ -132,6 +138,8 @@ const SignInPage = () => {
             variant="outlined"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            error={Boolean(error)}
+            helperText={errorPassword && <span>{errorPassword}</span>}
           />
           {/* <FormControlLabel
             control={<Checkbox value="remember" color="primary" />}
@@ -140,10 +148,10 @@ const SignInPage = () => {
           <Button
             className={classes.submit}
             color="primary"
+            disabled={loading}
             fullWidth
             type="submit"
             variant="contained"
-            disabled={loading}
           >
             Sign In
           </Button>

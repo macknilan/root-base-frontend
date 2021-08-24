@@ -46,6 +46,8 @@ const featuredPosts = [
 
 export default function Layout() {
   const user = useContext(AppContext);
+  /* debugger; */
+  console.log('user layout ---> ', user);
   const classes = useStyles();
 
   return (
@@ -67,7 +69,7 @@ export default function Layout() {
       <Footer
         title="Footer"
         description="Something here to give the footer a purpose!"
-        onlyDemostrativeUser={!user ? '' : user.username}
+        onlyDemostrativeUser={!user ? '' : user.user.username}
       />
     </>
   );
