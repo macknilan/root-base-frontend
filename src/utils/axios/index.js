@@ -13,7 +13,7 @@ const instance = axios.create({
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Credentials': true,
   }, */
-  timeout: 30000,
+  timeout: 5000,
   /*   auth: {
       username: `${TOKEN}`,
     },
